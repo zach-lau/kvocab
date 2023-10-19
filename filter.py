@@ -18,10 +18,17 @@ def filter_morphs(morphs):
     """
     punctuation = "?,!.'\":-"
     banned_words = ["...", "♪"]
+    def strip(m):
+        """ Remove punctuation and whitespace"""
+        m = re.sub(f'[{punctuation}]|\\d', '', m)
+        return m.strip()
+    morphs = map(strip, morphs)
     def valid(m):
         if m in punctuation:
             return False
         if m in banned_words:
             return False
         return True
-    return filter(valid, morphs)
+    morphs = filter(valid, morphs)
+    return morphs
+    
