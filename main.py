@@ -17,7 +17,7 @@ if __name__ == "__main__":
     # filename = "./data/rhghr10.xml"
     filename = "./data/mlfts8.vtt"
     word_dict = defaultdict(lambda : 0)
-    for phrase in extract_vtt(filename):
+    for phrase in extract(filename):
         phrase = filter_line(phrase)
         # morphs = hannanum.morphs(phrase)
         # morphs = filter_morphs(morphs)
