@@ -32,3 +32,11 @@ def filter_morphs(morphs):
     morphs = filter(valid, morphs)
     return morphs
     
+def filter_pos(pos_list):
+    def valid(pos):
+        valid_pos = ["Noun", "Verb", "Adjective", "Exclamation"]
+        if pos[1] not in valid_pos:
+            return False
+        return True
+    sol = filter(valid, pos_list)
+    return sol
