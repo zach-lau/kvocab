@@ -8,15 +8,16 @@ import csv
 from konlpy.tag import Okt
 from collections import defaultdict
 
-from extract import extract_xml
+from extract import *
 from filter import *
 
 if __name__ == "__main__":
     # hannanum = Hannanum(max_heap_size=4096)
     okt = Okt()
-    filename = "./data/rhghr10.xml"
+    # filename = "./data/rhghr10.xml"
+    filename = "./data/mlfts8.vtt"
     word_dict = defaultdict(lambda : 0)
-    for phrase in extract_xml(filename):
+    for phrase in extract_vtt(filename):
         phrase = filter_line(phrase)
         # morphs = hannanum.morphs(phrase)
         # morphs = filter_morphs(morphs)
