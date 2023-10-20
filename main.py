@@ -3,7 +3,7 @@ Main entry point for the vocab scripts
 """
 
 import csv
-
+import os.path
 # from konlpy.tag import Hannanum
 from konlpy.tag import Okt
 from collections import defaultdict
@@ -14,8 +14,8 @@ from filter import *
 if __name__ == "__main__":
     # hannanum = Hannanum(max_heap_size=4096)
     okt = Okt()
-    # filename = "./data/rhghr10.xml"
-    filename = "./data/mlfts8.vtt"
+    filename = "./data/rhghr10.xml"
+    # filename = "./data/mlfts8.vtt"
     word_dict = defaultdict(lambda : 0)
     for phrase in extract(filename):
         phrase = filter_line(phrase)
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         for p in pos:
             word_dict[p] += 1
 
-    outfile = "out.csv"
+    outfile = os.path.splitext(filename)[0] + ".csv"
     with open(outfile, 'w') as csvfile:
         writer = csv.writer(csvfile)
         for pair in sorted(word_dict.items(),key = lambda x : x[1], reverse=True):
