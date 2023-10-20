@@ -29,4 +29,6 @@ if __name__ == "__main__":
     with open(outfile, 'w') as csvfile:
         writer = csv.writer(csvfile)
         for pair in sorted(word_dict.items(),key = lambda x : x[1], reverse=True):
-            writer.writerow(pair)
+            pos_pair, count = pair
+            word, pos = pos_pair
+            writer.writerow([word, pos, count])
