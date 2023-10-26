@@ -1,0 +1,16 @@
+ {
+  "manifest_version": 2,
+  "name": "Sub-extractor",
+  "description" : "Autodownload subtitle files from netflix and viki",
+  "version": "0.1",
+  "icons": {
+    "48": "icon48.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.viki.com/*"],
+      "run_at": "document_end",
+      "js": ["content_script.js"]
+    }
+  ]
+ }
