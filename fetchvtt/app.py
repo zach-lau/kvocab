@@ -10,12 +10,17 @@ def handle():
     print("Got a request!")
     return "<p>Hello world!<p>"
 
+def getFilename(movieName : str, ep : str):
+    name = movieName.lower().replace(" ", "-")
+    return f'data/{name}-{ep}.vtt'
+
 @app.post("/")
 def handle_post():
     print("Got post request")
     movieObj = request.json
     vttRes = requests.get(movieObj['url'])
     print(vttRes.json)
-    with open("outfile.vtt", "wb") as f:
+    filename = getFilename(movieObj["movieName"], movieObj["ep"])
+    with open(filename, "wb") as f:
         f.write(vttRes.content)
     return {"status" : "ok"} 
