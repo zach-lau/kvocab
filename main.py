@@ -11,11 +11,9 @@ from collections import defaultdict
 from extract import *
 from filter import *
 
-if __name__ == "__main__":
+def digest(filename):
     # hannanum = Hannanum(max_heap_size=4096)
     okt = Okt()
-    filename = "./data/rhghr10.xml"
-    # filename = "./data/mlfts8.vtt"
     word_dict = defaultdict(lambda : 0)
     for phrase in extract(filename):
         phrase = filter_line(phrase)
@@ -33,3 +31,7 @@ if __name__ == "__main__":
             pos_pair, count = pair
             word, pos = pos_pair
             writer.writerow([word, pos, count])
+
+if __name__ == "__main__":
+    digest("./data/mlfts14.vtt")
+    
