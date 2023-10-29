@@ -3,7 +3,7 @@ from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["https://www.viki.com/*"])
+CORS(app, supports_credentials=True, origins=["https://www.viki.com/*", "https://www.netflix.com/*"])
 
 @app.get("/")
 def handle():
