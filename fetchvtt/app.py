@@ -31,7 +31,6 @@ def handle_post():
     print("Got post request")
     movieObj = request.json
     vttRes = requests.get(movieObj['url'])
-    print(vttRes)
     filename = getFilename(movieObj["movieName"], movieObj["ep"], vttRes.headers['content-type'])
     with open(filename, "wb") as f:
         f.write(vttRes.content)
