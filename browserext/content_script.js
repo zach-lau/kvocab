@@ -3,7 +3,9 @@ scriptElem.text = `
 (function initScraper(){
     const TARGET_LANG = "ko";
     const SERVER_URL = "http://127.0.0.1:5000"; // Other hosts might have CORS issues
-   
+    const WEBVTT_FMT = 'webvtt-lssdh-ios8';
+    const IMSC = 'imsc1.1';
+     
     // Basic post function from mozilla
     async function postJSON(data) {
       try {
@@ -47,8 +49,35 @@ scriptElem.text = `
         }
       }
 
+    // This function is mostly copied from subadub
     function netflixExtract(movieObj){
-      console.log("TODO - extract from netflix");
+      console.log("Netflix extract");
+      // let movieName = filenamePieces.join(" ");
+      const movieName = "test";
+      const movieId = movieObj.movieId;
+      // console.log(filenamePieces);
+      for (const track of movieObj.timedtexttracks){
+        console.log("test");
+        if (track.isForcedNarrative || track.isNoneTrack) continue;
+        if (!track.ttDownloadables) continue;
+        if (track.language !== TARGET_LANG) continue;
+        console.log("Korean subs");
+        console.log(track);
+        let dlObj = track.ttDownloadables[WEBVTT_FMT];
+        if (!dlObj || !dlObj.urls){
+          dlObj = track.ttDownloadables[IMSC];
+        } 
+        if (!dlObj || !dlObj.urls) continue;
+        const bestUrl = dlObj.urls[0].url;
+        if (!bestUrl) continue;
+        console.log("Found src lang track");
+        send({
+          movieId : movieId,
+          movieName : movieName,
+          ep : 1,
+          url : bestUrl
+        });
+      }
     }
     
     // Strategy basedon subadub
