@@ -46,18 +46,33 @@ scriptElem.text = `
           }
         }
       }
+
+    function netflixExtract(movieObj){
+      console.log("TODO - extract from netflix");
+    }
     
     // Strategy basedon subadub
     const originalParse = JSON.parse;
     JSON.parse = function() {
       const value = originalParse.apply(this, arguments);
-      if (value && value.video && value.subtitles){
-        console.log("Found subfile");
-        vikiExtract(value);
+      // Different parsing strategy based on hostname
+      switch(window.location.hostname){
+        case "www.viki.com":
+          if (value && value.video && value.subtitles){
+            console.log("Found subfile");
+            vikiExtract(value);
+          }
+          break;
+        case "www.netflix.com":
+          if (value && value.result && value.result.movieId && value.result.timedtexttracks) {
+            console.log("Netflix subs");
+            netflixExtract(value.result);
+          }
       }
       return value;
     }
     console.log("This is a test");
+    console.log(window.location.hostname);
 })();
 `;
 
