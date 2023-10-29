@@ -12,15 +12,18 @@ def handle():
 
 def getFilename(movieName : str, ep : str, content_type : str):
     """ filetype - http filetype """
+    # Get name part
     name = movieName.lower().replace(" ", "-")
     print("Got", content_type)
 
+    # Get extension
     if content_type == "text/xml":
         ext = "xml"
     elif content_type == "text/vtt":
         ext = "vtt"
     else:
         ext = "txt"
+
     return f'data/{name}-{ep}.{ext}'
 
 @app.post("/")
