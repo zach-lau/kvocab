@@ -53,8 +53,8 @@ scriptElem.text = `
     function netflixExtract(movieObj){
       console.log("Netflix extract");
       // let movieName = filenamePieces.join(" ");
-      const movieName = "test";
       const movieId = movieObj.movieId;
+      const movieName = movieId.toString();
       // console.log(filenamePieces);
       for (const track of movieObj.timedtexttracks){
         console.log("test");
