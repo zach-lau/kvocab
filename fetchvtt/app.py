@@ -34,4 +34,5 @@ def handle_post():
     filename = getFilename(movieObj["movieName"], movieObj["ep"], vttRes.headers['content-type'])
     with open(filename, "wb") as f:
         f.write(vttRes.content)
+    print(f'Wrote out {filename}')
     return {"status" : "ok"} 
