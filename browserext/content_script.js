@@ -52,9 +52,19 @@ scriptElem.text = `
     // This function is mostly copied from subadub
     function netflixExtract(movieObj){
       console.log("Netflix extract");
-      // let movieName = filenamePieces.join(" ");
       const movieId = movieObj.movieId;
-      const movieName = movieId.toString();
+      const filenamePieces = [];
+      for (const elem of document.querySelectorAll('.video-title *')) {
+        if (!elem.firstElementChild && elem.textContent) { // only get 'leaf' elements with text
+          filenamePieces.push(elem.textContent);
+        }
+      }
+      let movieName;
+      if (filenamePieces.length) {
+        srcFilename = filenamePieces.join(' ');
+      } else {
+        movieName = movieId.toString();
+      }
       // console.log(filenamePieces);
       for (const track of movieObj.timedtexttracks){
         console.log("test");
