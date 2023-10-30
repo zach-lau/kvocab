@@ -2,36 +2,34 @@
 Main entry point for the vocab scripts
 """
 
-import csv
 import os.path
-# from konlpy.tag import Hannanum
-from konlpy.tag import Okt
 from collections import defaultdict
 
 from extract import *
 from filter import *
+from helpers import *
 
-def digest(filename):
-    # hannanum = Hannanum(max_heap_size=4096)
-    okt = Okt()
+from korean_morph import k_morph
+from canto_morph import canto_morph
+
+def digest(filename, langauge = "ko"):
+    if langauge == "ko":
+        morph_tagger = k_morph()
+    elif langauge == "canto":
+        morph_tagger = canto_morph
+    else:
+        print("Invalid langauge")
+        return
     word_dict = defaultdict(lambda : 0)
     for phrase in extract(filename):
-        phrase = filter_line(phrase)
-        # morphs = hannanum.morphs(phrase)
-        # morphs = filter_morphs(morphs)
-        pos = okt.pos(phrase, norm=True, stem=True)
-        pos = filter_pos(pos)
+        pos = morph_tagger.get_morphs(phrase)    
         for p in pos:
             word_dict[p] += 1
-
     outfile = os.path.splitext(filename)[0] + ".csv"
-    with open(outfile, 'w') as csvfile:
-        writer = csv.writer(csvfile)
-        for pair in sorted(word_dict.items(),key = lambda x : x[1], reverse=True):
-            pos_pair, count = pair
-            word, pos = pos_pair
-            writer.writerow([word, pos, count])
+    print(f"Writing out to {outfile}")
+    write_out(outfile, word_dict)
+
 
 if __name__ == "__main__":
-    digest("./data/mlfts14.vtt")
+    # digest("./data/mlfts14.vtt")
     
