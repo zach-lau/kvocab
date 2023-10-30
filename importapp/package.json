@@ -1,0 +1,15 @@
+{
+  "name": "importapp",
+  "version": "1.0.0",
+  "description": "For importing cards",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "author": "Zachary Lau",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.2"
+  }
+}
