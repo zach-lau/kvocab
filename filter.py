@@ -30,7 +30,7 @@ def filter_morphs(morphs):
             return False
         return True
     morphs = filter(valid, morphs)
-    return morphs
+    return list(morphs)
     
 def filter_pos(pos_list):
     def valid(pos):
