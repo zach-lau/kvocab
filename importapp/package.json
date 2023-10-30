@@ -10,6 +10,7 @@
   "author": "Zachary Lau",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^27.0.2"
+    "electron": "^27.0.2",
+    "electron-reload": "^2.0.0-alpha.1"
   }
 }
