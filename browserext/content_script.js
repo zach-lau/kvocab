@@ -54,8 +54,9 @@ scriptElem.text = `
       console.log("Netflix extract");
       const movieId = movieObj.movieId;
       const filenamePieces = [];
-      for (const elem of document.querySelectorAll('.video-title *')) {
-        if (!elem.firstElementChild && elem.textContent) { // only get 'leaf' elements with text
+      for (const elem of document.querySelectorAll('.a[data-uia="video-title]')) {
+        console.log("Found elem");
+        if (elem.textContent) { // only get 'leaf' elements with text
           filenamePieces.push(elem.textContent);
         }
       }
