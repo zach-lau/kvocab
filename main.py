@@ -12,11 +12,11 @@ from helpers import *
 from korean_morph import k_morph
 from canto_morph import canto_morph
 
-def digest(filename, langauge = "ko"):
-    if langauge == "ko":
+def digest(filename, language = "ko"):
+    if language == "ko":
         morph_tagger = k_morph()
-    elif langauge == "canto":
-        morph_tagger = canto_morph
+    elif language == "canto":
+        morph_tagger = canto_morph()
     else:
         print("Invalid langauge")
         return
@@ -32,4 +32,4 @@ def digest(filename, langauge = "ko"):
 
 if __name__ == "__main__":
     # digest("./data/mlfts14.vtt")
-    
+    digest("./data/kfh.xml", language="canto") 
