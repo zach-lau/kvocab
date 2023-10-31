@@ -20,16 +20,18 @@ def digest(filename, language = "ko"):
     else:
         print("Invalid langauge")
         return
-    word_dict = defaultdict(lambda : 0)
+    word_dict = {}
     for phrase in extract(filename):
         pos = morph_tagger.get_morphs(phrase)    
         for p in pos:
-            word_dict[p] += 1
+            if not p in word_dict:
+                word_dict[p] = [1, phrase] # count, example
+            else:
+                word_dict[p][0] += 1
     outfile = os.path.splitext(filename)[0] + ".csv"
     print(f"Writing out to {outfile}")
     write_out(outfile, word_dict)
 
-
 if __name__ == "__main__":
-    # digest("./data/mlfts14.vtt")
-    digest("./data/kfh.xml", language="canto") 
+    digest("./data/mlfts14.vtt")
+    # digest("./data/id.xml", language="canto") 
