@@ -1,7 +1,7 @@
 const scriptElem = document.createElement("script")
 scriptElem.text = `
 (function initScraper(){
-    const TARGET_LANG = "ko";
+    const TARGET_LANGS = ["ko"];
     const SERVER_URL = "http://127.0.0.1:5000"; // Other hosts might have CORS issues
     const WEBVTT_FMT = 'webvtt-lssdh-ios8';
     const IMSC = 'imsc1.1';
@@ -36,8 +36,11 @@ scriptElem.text = `
         const movieId = movieObj.video.id;
         const movieName = movieObj.video.container.titles.en;
         const ep = movieObj.video.number;
+        const origin_lang = movieObj.video.origin.language;
+        if (!TARGET_LANGS.includes(origin_lang))
+          return;
         for (const track of movieObj.subtitles) {
-          if (track.srclang && track.srclang === TARGET_LANG){
+          if (track.srclang && track.srclang === origin_lang){
             console.log("Found srclanag track");
             send({
                 movieId : movieId,
@@ -71,7 +74,7 @@ scriptElem.text = `
         console.log("test");
         if (track.isForcedNarrative || track.isNoneTrack) continue;
         if (!track.ttDownloadables) continue;
-        if (track.language !== TARGET_LANG) continue;
+        if (!TARGET_LANGS.includes(track.language)) continue;
         console.log("Korean subs");
         console.log(track);
         let dlObj = track.ttDownloadables[WEBVTT_FMT];
