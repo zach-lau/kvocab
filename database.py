@@ -60,6 +60,31 @@ class dbConnection:
                     curs.execute(f"""INSERT INTO WORDS (word, num) values ('{word}', {count}) RETURNING *;""")
                 res = curs.fetchall()
         return res
+    def update_many(self, word_list):
+        with self.conn:
+            with self.conn.cursor() as curs:
+                # Prep work to get all the words
+                curs.execute(f"""SELECT WORD, NUM FROM WORDS;""")
+                res = curs.fetchall()
+                word_dict = {}
+                for row in res:
+                    word, num = row
+                    word_dict[word] = num
+                update_list = []
+                insert_list = []
+                for elem in word_list:
+                    word, num = elem
+                    if word in word_dict.keys():
+                        new_num = word_dict[word] + num
+                        update_list.append((new_num, word)) # Backwards order
+                    else: # New word
+                        insert_list.append((word, num))
+                print(update_list)
+                print(insert_list)
+                update_sql = f"""UPDATE WORDS SET num = %s WHERE word = %s;"""
+                insert_sql = f"""INSERT INTO WORDS (WORD, NUM) VALUES (%s, %s);"""
+                curs.executemany(update_sql, update_list)
+                curs.executemany(insert_sql, insert_list)
         
     def import_file(filename):
         with open(filename, 'r') as f:
@@ -78,8 +103,9 @@ if __name__ == '__main__':
         #     """SELECT * FROM WORDS WHERE word = '엄마';"""
         # ])
         # res = db.check_exists('개새끼')A
-        res = db.update_word('졍국 사랑해', 100)
-        print(res)
+        # res = db.update_word('졍국 사랑해', 100)
+        db.update_many([('정국', 1), ('지민', 10)])
+        # print(res)
     finally:
         db.close()
     
