@@ -1,10 +1,13 @@
 const scriptElem = document.createElement("script")
 scriptElem.text = `
 (function initScraper(){
-    const TARGET_LANGS = ["ko"];
+    const TARGET_LANGS = ["ko", "ja", "yue"];
     const SERVER_URL = "https://localhost:5000"; // Other hosts might have CORS issues
     const WEBVTT_FMT = 'webvtt-lssdh-ios8';
     const IMSC = 'imsc1.1';
+
+    // Used to translate audio to subtitle where appropriate for netflix
+    const NETFLIX_SUB_DICT = { yue : "zh-Hant" };
      
     // Basic post function from mozilla
     async function postJSON(data) {
@@ -41,7 +44,7 @@ scriptElem.text = `
           return;
         for (const track of movieObj.subtitles) {
           if (track.srclang && track.srclang === originLang){
-            console.log("Found srclanag track");
+            console.log("Found srclang track");
             send({
                 movieId : movieId,
                 movieName : movieName,
@@ -55,8 +58,10 @@ scriptElem.text = `
 
     function getOriginLangNetflix(movieObj){
       for (const track of movieObj.audio_tracks){
-        if (track.languageDescription && track.languageDescription.includes("[Original]"))
+        if (track.languageDescription && track.languageDescription.includes("[Original]")){
+          console.log("Origin language", track.language);
           return track.language;
+        }
       }
     }
 
@@ -79,13 +84,17 @@ scriptElem.text = `
       }
       // console.log(filenamePieces);
       const originLang = getOriginLangNetflix(movieObj);
+      console.log("Netflix test");
+      let subLang = NETFLIX_SUB_DICT[originLang];
+      if (!subLang)
+        subLang = originLang;
       if (!TARGET_LANGS.includes(originLang))
         return;
       for (const track of movieObj.timedtexttracks){
         console.log("test");
         if (track.isForcedNarrative || track.isNoneTrack) continue;
         if (!track.ttDownloadables) continue;
-        if (track.language !== originLang) continue;
+        if (track.language !== subLang) continue;
         console.log("Target lang subs");
         console.log(track);
         let dlObj = track.ttDownloadables[WEBVTT_FMT];
