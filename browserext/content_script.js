@@ -2,7 +2,7 @@ const scriptElem = document.createElement("script")
 scriptElem.text = `
 (function initScraper(){
     const TARGET_LANGS = ["ko"];
-    const SERVER_URL = "http://127.0.0.1:5000"; // Other hosts might have CORS issues
+    const SERVER_URL = "https://localhost:5000"; // Other hosts might have CORS issues
     const WEBVTT_FMT = 'webvtt-lssdh-ios8';
     const IMSC = 'imsc1.1';
      
@@ -85,7 +85,7 @@ scriptElem.text = `
         console.log("test");
         if (track.isForcedNarrative || track.isNoneTrack) continue;
         if (!track.ttDownloadables) continue;
-        if (!track.language === originLang) continue;
+        if (track.language !== originLang) continue;
         console.log("Target lang subs");
         console.log(track);
         let dlObj = track.ttDownloadables[WEBVTT_FMT];
