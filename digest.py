@@ -3,7 +3,6 @@ Main entry point for the vocab scripts
 """
 
 import os.path
-from collections import defaultdict
 import sys
 
 from extract import *
@@ -32,6 +31,7 @@ def digest(filename, language = "ko"):
     outfile = os.path.splitext(filename)[0] + ".csv"
     print(f"Writing out to {outfile}")
     write_out(outfile, word_dict)
+    return outfile
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
