@@ -30,7 +30,7 @@ scriptElem.text = `
     }
 
     function send(obj){
-        console.log("Sending", obj);
+        // console.log("Sending", obj);
         postJSON(obj);
     }
     
@@ -84,19 +84,18 @@ scriptElem.text = `
       }
       // console.log(filenamePieces);
       const originLang = getOriginLangNetflix(movieObj);
-      console.log("Netflix test");
       let subLang = NETFLIX_SUB_DICT[originLang];
       if (!subLang)
         subLang = originLang;
       if (!TARGET_LANGS.includes(originLang))
         return;
       for (const track of movieObj.timedtexttracks){
-        console.log("test");
         if (track.isForcedNarrative || track.isNoneTrack) continue;
         if (!track.ttDownloadables) continue;
         if (track.language !== subLang) continue;
+        if (track.languageDescription === "Off") continue;
         console.log("Target lang subs");
-        console.log(track);
+        // console.log(track);
         let dlObj = track.ttDownloadables[WEBVTT_FMT];
         if (!dlObj || !dlObj.urls){
           dlObj = track.ttDownloadables[IMSC];
@@ -128,14 +127,18 @@ scriptElem.text = `
           }
           break;
         case "www.netflix.com":
-          if (value && value.result && value.result.movieId && value.result.timedtexttracks) {
-            console.log("Netflix subs");
+          if (value && value.result 
+            && value.result.movieId 
+            && value.result.timedtexttracks
+            && value.result.duration > 300000 // Get rid of short clips
+            ) {
+            // console.log("Netflix subs");
+            console.log(value);
             netflixExtract(value.result);
           }
       }
       return value;
     }
-    console.log("This is a test");
     console.log(window.location.hostname);
 })();
 `;
