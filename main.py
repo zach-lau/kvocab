@@ -4,6 +4,7 @@ Main entry point for the vocab scripts
 
 import os.path
 from collections import defaultdict
+import sys
 
 from extract import *
 from filter import *
@@ -33,5 +34,9 @@ def digest(filename, language = "ko"):
     write_out(outfile, word_dict)
 
 if __name__ == "__main__":
-    digest("./data/mlfts14.vtt")
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+    else:
+        filename = "./data/mlfts14.vtt"
+    digest(filename)
     # digest("./data/id.xml", language="canto") 
