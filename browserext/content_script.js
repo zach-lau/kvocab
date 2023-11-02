@@ -36,21 +36,29 @@ scriptElem.text = `
         const movieId = movieObj.video.id;
         const movieName = movieObj.video.container.titles.en;
         const ep = movieObj.video.number;
-        const origin_lang = movieObj.video.origin.language;
-        if (!TARGET_LANGS.includes(origin_lang))
+        const originLang = movieObj.video.origin.language;
+        if (!TARGET_LANGS.includes(originLang))
           return;
         for (const track of movieObj.subtitles) {
-          if (track.srclang && track.srclang === origin_lang){
+          if (track.srclang && track.srclang === originLang){
             console.log("Found srclanag track");
             send({
                 movieId : movieId,
                 movieName : movieName,
                 ep : ep,
-                url : track.src
+                url : track.src,
+                lang : originLang
             });
           }
         }
       }
+
+    function getOriginLangNetflix(movieObj){
+      for (const track of movieObj.audio_tracks){
+        if (track.languageDescription && track.languageDescription.includes("[Original]"))
+          return track.language;
+      }
+    }
 
     // This function is mostly copied from subadub
     function netflixExtract(movieObj){
@@ -70,12 +78,15 @@ scriptElem.text = `
         movieName = movieId.toString();
       }
       // console.log(filenamePieces);
+      const originLang = getOriginLangNetflix(movieObj);
+      if (!TARGET_LANGS.includes(originLang))
+        return;
       for (const track of movieObj.timedtexttracks){
         console.log("test");
         if (track.isForcedNarrative || track.isNoneTrack) continue;
         if (!track.ttDownloadables) continue;
-        if (!TARGET_LANGS.includes(track.language)) continue;
-        console.log("Korean subs");
+        if (!track.language === originLang) continue;
+        console.log("Target lang subs");
         console.log(track);
         let dlObj = track.ttDownloadables[WEBVTT_FMT];
         if (!dlObj || !dlObj.urls){
@@ -89,7 +100,8 @@ scriptElem.text = `
           movieId : movieId,
           movieName : movieName,
           ep : 1,
-          url : bestUrl
+          url : bestUrl,
+          lang : originLang
         });
       }
     }
