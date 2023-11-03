@@ -25,7 +25,7 @@ def digest(filename, language = "ko"):
         pos = morph_tagger.get_morphs(phrase)    
         for p in pos:
             if not p in word_dict:
-                word_dict[p] = [1, phrase] # count, example
+                word_dict[p] = [1, phrase.replace('\n', ' ')] # count, example
             else:
                 word_dict[p][0] += 1
     outfile = os.path.splitext(filename)[0] + ".csv"
