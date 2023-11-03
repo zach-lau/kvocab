@@ -35,7 +35,11 @@ def add_meaning():
 def get_types():
     try:
         db = dbConnection("../database.ini")
-        return db.get_types()
+        types = db.get_types()
+        return {
+            "types" : [{"id":x[0], "value":x[1]} for x in types]
+        }
+        
     except Exception as e:
         print(e)
         return { "status" : "Fail" }

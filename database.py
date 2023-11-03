@@ -159,8 +159,9 @@ class dbConnection:
         self.conn.close()
 
     def get_types(self):
+        """ Return list of tuples of types """
         types = self.execute(f"""SELECT ID, NAME FROM TYPES;""")
-        return dict(types)
+        return types
 
 if __name__ == '__main__':
     try:

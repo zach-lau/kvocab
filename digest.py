@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Main entry point for the vocab scripts
 """
@@ -36,7 +37,11 @@ def digest(filename, language = "ko"):
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         filename = sys.argv[1]
+        for file in sys.argv[1:]:
+            try:
+                digest(file)
+            except:
+                print(f"Couldn't parse file {file}")
     else:
-        filename = "./data/mlfts14.vtt"
-    digest(filename)
+        digest("./data/mlfts14.vtt")
     # digest("./data/id.xml", language="canto") 
