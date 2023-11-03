@@ -1,21 +1,39 @@
 <!doctype html>
 <head>
     <title> Card creator </title>
-    <script>
-        console.log("This is a test");
-    </script>
 </head>
 <body>
     <div class="edit">
-        <form>
-        <label for="word">Word: </label><input type="text" id="word" name="word" value="word"><br>
-        <label for="meaning">Meaning: </label><input type="text" id="meaning" name="word" value="meaning"><br>
-        <label for="Example">Example: </label><input type="text" id="example" name="word" value="example sentence"><br>
-        <label for="Link">Link: </label><input type="text" id="link" name="word" value="link"><br>
-        <input type="submit" value="Submit">
-        </form>
+        <input type="text" id="word" value="word"><br>
+        <input type="text" id="meaning" value="meaning"><br>
+        <input type="text" id="example" value="example sentence"><br>
+        <input type="select" id="type" value="type"><br>
+        <input type="button" id="subButton" value="Submit">
     </div>
     <div class="lookup">
         <iframe src="https://korean.dict.naver.com/koendict/#/main" width="100%" height="500"></iframe>
     </div>
+    <script>
+        const server = "http://localhost:5001";
+        function populate(word){
+            const wordElem = document.getElementById("word");
+            const meaningElem = document.getElementById("meaning");
+            const exampleElem = document.getElementById("example");
+            const typeElem = document.getElementById("type");
+            wordElem.value = word.word;
+            meaningElem.value = word.meaning;
+            exampleElem.value = word.example;
+            typeElem.value = word.type;
+        }
+        function getNewWord(){
+            return fetch(`${server}/new`)
+            .then(
+                (res) => res.json()
+            )
+        }
+        getNewWord().then((word) => {
+            // console.log(word);
+            populate(word);
+        })
+    </script>
 </body>
