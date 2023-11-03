@@ -96,13 +96,13 @@ class dbConnection:
                                  VALUES (%s, %s, %s, %s, %s);"""
                 def update_tuple(row):
                     """ Create an approriate update tuple from a row """
-                    word, pos, ex, num = row
+                    word, pos, num, ex = row
                     old_num = current_dict[(word, pos)]
                     num += old_num
                     return (num, word, pos)
                 def insert_tuple(row):
                     """Create an appropriate sql insert tuple from row"""
-                    word, pos, ex, num = row
+                    word, pos, num, ex = row
                     if word in old_set:
                         type = 1 # OLD
                     else:
@@ -111,11 +111,12 @@ class dbConnection:
                 curs.executemany(update_sql, map(update_tuple, update_list))
                 curs.executemany(insert_sql, map(insert_tuple, insert_list))
         
-    def import_file(filename):
+    def import_file(self, filename):
+        data = []
         with open(filename, 'r') as f:
             r = csv.reader(f)
-            for row in r:
-                pass
+            data = list(r)
+        self.update_many(data)
     def close(self):
         self.conn.close()
 
@@ -129,11 +130,12 @@ if __name__ == '__main__':
         # ])
         # res = db.check_exists('개새끼')A
         # res = db.update_word('졍국 사랑해', 100)
-        db.update_many([
-            ('정국', 'Noun', '', 1), 
-            ('지민', 'Noun', '지민을 사랑한다', 10),
-            ('학생', 'Noun', '난 학생이애요', 1)
-            ])
+        # db.update_many([
+        #     ('정국', 'Noun', 1, ''), 
+        #     ('지민', 'Noun', 10, '지민을 사랑한다'),
+        #     ('학생', 'Noun', 1, '난 학생이애요')
+        #     ])
+        db.import_file('./data/mlfts14.csv')
         # print(res)
     finally:
         db.close()
