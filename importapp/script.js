@@ -5,9 +5,12 @@ const posElem = document.getElementById("pos");
 const meaningElem = document.getElementById("meaning");
 const exampleElem = document.getElementById("example");
 const typeElem = document.getElementById("type");
+
+const langElem = document.getElementById("select-lang");
 // State variables
 let currentId = null;
 let currentWord = null;
+let currentLanguage = 1;
 
 function populate(word){
     wordElem.value = word.word;
@@ -16,20 +19,22 @@ function populate(word){
     exampleElem.value = word.example;
     typeElem.value = 5;
 }
-function addOptions(options){
-    const selectElem = document.getElementById("type");
-    for (const t of options.types){
+function addOptions(elem, optionsList){
+    for (const t of optionsList){
         const opt = document.createElement("option");
         opt.value = t.id;
         opt.innerText = `${t.id}: ${t.value}`;
-        selectElem.appendChild(opt);
+        elem.appendChild(opt);
     }
 }
-async function getNewWord(){
-    return fetch(`${server}/new`).then((res) => res.json());
+async function getNewWord(language){
+    return fetch(`${server}/new?language=${language}`).then((res) => res.json());
 }
-async function getOptions(){
+async function getTypes(){
     return fetch(`${server}/types`).then((res) => res.json());
+}
+async function getLanguages(){
+    return fetch(`${server}/languages`).then((res) => res.json());
 }
 function updateSearchURL(searchTerm){
     const dict_link = "https://korean.dict.naver.com/koendict/#/search";
@@ -53,7 +58,7 @@ async function postJSON(post_url, data) {
     }
   }
 function refresh(){
-    getNewWord().then((word) => {
+    getNewWord(currentLanguage).then((word) => {
         // console.log(word);
         populate(word);
         updateSearchURL(word.word);
@@ -82,6 +87,7 @@ function sendData(){
             meaning : meaningElem.value,
             type : typeElem.value,
             num : 0,
+            language : currentLanguage,
             example : exampleElem.value,
         }
         return postJSON(`${server}/addnew`, data)
@@ -92,12 +98,19 @@ function submit(){
 }
 
 // Main loop code
-getOptions().then((options) => {
+getTypes().then((types) => {
     // console.log(options.types);
-    addOptions(options);
+    addOptions(typeElem, types.types);
 });
+getLanguages().then((languages) => {
+    addOptions(langElem, languages.languages);
+})
 refresh();
 document.getElementById("subButton").onclick = submit;
 document.getElementById("ref-button").onclick = () => {
     updateSearchURL(wordElem.value); // Update with the current value
+}
+document.getElementById("refresh-language").onclick = () => {
+    currentLanguage = langElem.value;
+    refresh();
 }

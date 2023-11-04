@@ -28,6 +28,7 @@ class dbConnection:
     def __init__(self, inifile):
         creds = config(inifile)
         self.conn = psycopg2.connect(**creds)
+    # Simple execute statements
     def execute(self, statement):
         with self.conn:
             with self.conn.cursor() as curs:
@@ -41,11 +42,12 @@ class dbConnection:
                     curs.execute(s)
                 res.append(curs.fetchall())
         return res
+    # Table specific functions
     def get_unique_words(self):
         return [x[0] for x in self.execute("""SELECT DISTINCT WORD FROM WORDS;""")]
-    def check_exists(self, word):
+    def check_exists(self, word, language : int):
         """ Check if a word exists in the db"""
-        res = self.execute(f"""SELECT 1 FROM WORDS WHERE word = '{word}';""")
+        res = self.execute(f"""SELECT 1 FROM WORDS WHERE word = '{word}' AND lang = {language};""")
         return len(res) > 0
     def update_word(self, word, count):
         """Deprecated - neds updating for POS 
@@ -62,7 +64,7 @@ class dbConnection:
                     curs.execute(f"""INSERT INTO WORDS (word, num) values ('{word}', {count}) RETURNING *;""")
                 res = curs.fetchall()
         return res
-    def _update_word_list(self, word_list):
+    def _update_word_list(self, word_list, language : int):
         """ Private method. Update the word count of a list of words (unique on word) in the db. Need to acquire conn 
          before using """
         with self.conn.cursor() as curs:
@@ -93,8 +95,8 @@ class dbConnection:
             # print(update_list)
             # print(insert_list)
             update_sql = f"""UPDATE WORDS SET num = %s WHERE word = %s AND pos = %s;"""
-            insert_sql = f"""INSERT INTO WORDS (WORD, POS, EXAMPLE, TYPE, NUM) 
-                                VALUES (%s, %s, %s, %s, %s);"""
+            insert_sql = f"""INSERT INTO WORDS (WORD, POS, EXAMPLE, TYPE, NUM, LANG) 
+                                VALUES (%s, %s, %s, %s, %s, %s);"""
             def update_tuple(row):
                 """ Create an approriate update tuple from a row """
                 word, pos, num, ex = row
@@ -108,14 +110,14 @@ class dbConnection:
                     type = 1 # OLD
                 else:
                     type = 2 # NEW
-                return (word, pos, ex, type, num)
+                return (word, pos, ex, type, num, language)
             curs.executemany(update_sql, map(update_tuple, update_list))
             curs.executemany(insert_sql, map(insert_tuple, insert_list))
-    def update_many(self, word_list):
+    def update_many(self, word_list, language : int):
         with self.conn:
-            self._update_word_list(self, word_list)
+            self._update_word_list(self, word_list, language)
 
-    def import_file(self, filename):
+    def import_file(self, filename, language : int):
         data = []
         with open(filename, 'r') as f:
             r = csv.reader(f)
@@ -131,15 +133,15 @@ class dbConnection:
                     return
                 # Add to files
                 curs.execute(f"""INSERT INTO UPLOADED_FILES (FILENAME) VALUES('{basename}');""")
-            self._update_word_list(data)
-    def get_new(self):
+            self._update_word_list(data, language)
+    def get_new(self, langauge : int):
         """Get the most common new word from the database"""
         with self.conn:
             with self.conn.cursor() as curs:
-                curs.execute("SELECT * FROM WORDS WHERE TYPE = 2 ORDER BY NUM DESC LIMIT 1;")
+                curs.execute(f"SELECT * FROM WORDS WHERE TYPE = 2 AND LANG = {langauge} ORDER BY NUM DESC LIMIT 1;")
                 res = curs.fetchone()
                 print(res)
-        id, word, pos, meaning, example, type, num = res
+        id, word, pos, meaning, example, type, num, lang = res
         return {
             "id" : id,
             "word" : word,
@@ -147,7 +149,8 @@ class dbConnection:
             "meaning" : meaning,
             "example" : example,
             "type" : type,
-            "num" : num
+            "num" : num,
+            "lang" : lang
         }
     def add_meaning_and_type(self, id, meaning, type):
         """ Add a meaning and update the type for a given word"""
@@ -158,14 +161,14 @@ class dbConnection:
     def close(self):
         self.conn.close()
     
-    def add_alternate(self, word, pos, meaning, type, num, example=''):
-        """ When we add an alterenate definition for a word"""
+    def add_alternate(self, word, pos, meaning, type, num, language : int, example=''):
+        """ When we add an alternate definition for a word"""
         with self.conn:
             with self.conn.cusror() as curs:
                 curs.execute(f"""INSERT INTO WORDS 
-                    (word, pos, meaning, type, num, example)
+                    (word, pos, meaning, type, num, language, example)
                     VALUES
-                    ('{word}','{pos}','{meaning}','{type}','{num}','{example}')
+                    ('{word}','{pos}','{meaning}','{type}','{num}','{language}',{example}')
                     ;"""
                 )
 
@@ -173,6 +176,11 @@ class dbConnection:
         """ Return list of tuples of types """
         types = self.execute(f"""SELECT ID, NAME FROM TYPES;""")
         return types
+    
+    def get_languages(self):
+        """ Return list of ids and languages """
+        langs = self.execute("SELECT ID, CODE FROM LANGUAGES;")
+        return langs
 
 if __name__ == '__main__':
     try:
@@ -192,7 +200,9 @@ if __name__ == '__main__':
         # db.import_file('./data/mlfts14.csv')
         # print(db.get_new())
         # db.add_meaning_and_type(10306, "Number one bts member", 7)
-        print(db.get_types())
+        # print(db.get_types())A
+        # print(db.check_exists('개새끼', 1))
+        print(db.get_languages())
         # print(res)
     finally:
         db.close()

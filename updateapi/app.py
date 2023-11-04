@@ -7,7 +7,8 @@ app = Flask(__name__)
 def get_next_word():
     try:
         db = dbConnection("../database.ini")
-        return db.get_new()
+        language = int(request.args.get('language'))
+        return db.get_new(language)
     except Exception as e:
         print(e)
         return { "status" : "Fail" }
@@ -36,16 +37,16 @@ def add_new():
     try:
         db = dbConnection("../database.ini")
         vals = request.json
-        word = vals["word"]
-        if db.check_exists(word):
+        if db.check_exists(vals["word"], vals["language"]):
             return {"status":"Fail", "reason":"Already exists"}
         db.add_alternate(
-            word,
+            vals["word"],
             vals["pos"],
             vals["meaning"],
             vals["type"],
             vals["num"],
-            vals["example"]
+            vals["language"],
+            vals["example"],
         )
     except Exception as e:
         print(e)
@@ -68,3 +69,16 @@ def get_types():
     finally:
         db.close()
         
+@app.get("/languages")
+def get_languages():
+    try:
+        db = dbConnection("../database.ini")
+        langs = db.get_languages()
+        return {
+            "languages" : [{"id":id,"value":code} for id, code in langs]
+        }
+    except Exception as e:
+        print(e)
+        return { "status" : "Fail" }
+    finally:
+        db.close()
