@@ -141,8 +141,11 @@ class dbConnection:
                 curs.execute(f"SELECT * FROM WORDS WHERE TYPE = 2 AND LANG = {langauge} ORDER BY NUM DESC LIMIT 1;")
                 res = curs.fetchone()
                 print(res)
+        if not res:
+            return { "valid" : 0 }
         id, word, pos, meaning, example, type, num, lang = res
         return {
+            "valid" : 1,
             "id" : id,
             "word" : word,
             "pos" : pos,

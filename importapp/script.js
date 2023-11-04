@@ -11,6 +11,7 @@ const langElem = document.getElementById("select-lang");
 let currentId = null;
 let currentWord = null;
 let currentLanguage = 1;
+let validWord = false;
 
 function populate(word){
     wordElem.value = word.word;
@@ -57,13 +58,24 @@ async function postJSON(post_url, data) {
       console.error("Error:", error);
     }
   }
+function clearInputs(){
+    [wordElem, posElem, meaningElem, exampleElem].forEach((elem) => {
+        elem.value = "";
+    })
+}
 function refresh(){
     getNewWord(currentLanguage).then((word) => {
         // console.log(word);
+        if (!word.valid){
+            clearInputs();
+            validWord = false;
+            return;
+        }
         populate(word);
         updateSearchURL(word.word);
         currentId = word.id;
         currentWord = word.word;
+        validWord = true;
     })
     meaningElem.focus();
 }
