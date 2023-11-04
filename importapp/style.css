@@ -1,7 +1,12 @@
 * {
     font-family : Georgia, 'Times New Roman', Times, serif;
+    font-size: 24px;
 }
 
 .edit #example {
-    width : 100em ;
+    width : 100% ;
+}
+
+.lookup {
+    bottom : 0
 }

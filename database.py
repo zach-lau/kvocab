@@ -157,6 +157,17 @@ class dbConnection:
         
     def close(self):
         self.conn.close()
+    
+    def add_alternate(self, word, pos, meaning, type, num, example=''):
+        """ When we add an alterenate definition for a word"""
+        with self.conn:
+            with self.conn.cusror() as curs:
+                curs.execute(f"""INSERT INTO WORDS 
+                    (word, pos, meaning, type, num, example)
+                    VALUES
+                    ('{word}','{pos}','{meaning}','{type}','{num}','{example}')
+                    ;"""
+                )
 
     def get_types(self):
         """ Return list of tuples of types """

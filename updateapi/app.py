@@ -31,6 +31,28 @@ def add_meaning():
     finally:
         db.close()
 
+@app.post("/addnew")
+def add_new():
+    try:
+        db = dbConnection("../database.ini")
+        vals = request.json
+        word = vals["word"]
+        if db.check_exists(word):
+            return {"status":"Fail", "reason":"Already exists"}
+        db.add_alternate(
+            word,
+            vals["pos"],
+            vals["meaning"],
+            vals["type"],
+            vals["num"],
+            vals["example"]
+        )
+    except Exception as e:
+        print(e)
+        return { "status" : "Fail" } 
+    finally:
+        db.close()
+
 @app.get("/types")
 def get_types():
     try:

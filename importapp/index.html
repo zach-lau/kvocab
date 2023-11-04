@@ -6,15 +6,17 @@
 <body>
     <h1> Look up words </h1>
     <div class="edit">
-        <input type="text" id="word" value="word"><br>
-        <input type="text" id="meaning" value="meaning" placeholder="Meaning"><br>
-        <input type="text" id="example" value="example sentence"><br>
+        <input type="text" id="word"><br>
+        <input type="text" id="pos" readonly><br>
+        <input type="text" id="meaning" placeholder="Meaning"><br>
+        <input type="text" id="example" readonly><br>
         <select id = "type"></select>
         <br>
         <input type="button" id="subButton" value="Submit">
     </div>
     <div class="lookup">
-        <iframe src="https://korean.dict.naver.com/koendict/#/main" width="100%" height="500"></iframe>
+        <button id="ref-button">Refresh</button>
+        <iframe src="https://korean.dict.naver.com/koendict/#/main" width="100%" height="1000px"></iframe>
     </div>
     <script src="./script.js"></script>
 </body>
