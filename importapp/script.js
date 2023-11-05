@@ -44,8 +44,14 @@ async function getDatabase(){
 } 
 
 function updateSearchURL(searchTerm){
-    const dict_link = "https://korean.dict.naver.com/koendict/#/search";
-    const search_link = `${dict_link}?query=${searchTerm}`;
+    // Todo might need to more complicated logic to perform search later e.g. post request
+    const dictionaries = {
+        1 : "https://korean.dict.naver.com/koendict/#/search?query=",
+        2 : "https://cantonese.org/search.php?q=",
+    };
+    const dict_link = dictionaries[currentLanguage];
+    if (!dict_link) dict_link = "https://www.google.com/search?q="
+    const search_link = `${dict_link}${searchTerm}`;
     const searchFrame = document.querySelector(".lookup iframe");
     searchFrame.src = search_link;
 }
