@@ -5,6 +5,7 @@ Main entry point for the vocab scripts
 
 import os.path
 import sys
+import argparse
 
 from extract import *
 from filter import *
@@ -16,7 +17,7 @@ from canto_morph import canto_morph
 def digest(filename, language = "ko"):
     if language == "ko":
         morph_tagger = k_morph()
-    elif language == "canto":
+    elif language == "yue":
         morph_tagger = canto_morph()
     else:
         print("Invalid langauge")
@@ -35,13 +36,32 @@ def digest(filename, language = "ko"):
     return outfile
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        filename = sys.argv[1]
-        for file in sys.argv[1:]:
-            try:
-                digest(file)
-            except:
-                print(f"Couldn't parse file {file}")
-    else:
-        digest("./data/mlfts14.vtt")
-    # digest("./data/id.xml", language="canto") 
+    parser = argparse.ArgumentParser(
+        prog = 'digest',
+        description = 'Process subtite file and produce sorted list of morphemes',
+    )
+    parser.add_argument(
+        "language",
+        choices = ['ko','yue'],
+    )
+    parser.add_argument(
+        'files',
+        nargs=argparse.REMAINDER
+    )
+    args = parser.parse_args()
+    # print(args.language)
+    # print(args.files)
+    for file in args.files:
+        print(f"Parsing {file}")
+        digest(file, args.language)
+    
+    # if len(sys.argv) > 1:
+    #     filename = sys.argv[1]
+    #     for file in sys.argv[1:]:
+    #         try:
+    #             digest(file)
+    #         except:
+    #             print(f"Couldn't parse file {file}")
+    # else:
+    #     digest("./data/mlfts14.vtt")
+    # # digest("./data/id.xml", language="canto") 
