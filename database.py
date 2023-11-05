@@ -24,12 +24,26 @@ def config(filename='database.ini', section='postgresql'):
 class dbConnection:
     """
     Usage specific db connection
+    Note any _methods in this class are designed to be executed within a transaction 
+    Any public facing methods should be wrapped in transactions which can be done with @transact
     """
     def __init__(self, inifile):
         creds = config(inifile)
         self.conn = psycopg2.connect(**creds)
         self.db_name = creds["database"]
+    # decorator for public facing versions
+    def transact(db_func):
+        """ WARNING: the existing function needs to take the cursor as an argument but the public faing version wont
+        use that """
+        def new_func(self, *args, **kwargs):
+            with self.conn:
+                with self.conn.cursor() as curs:
+                    return db_func(self, curs, *args, **kwargs)
+        return new_func
     # Simple execute statements
+    def _execute(self, curs, statement):
+        curs.execute(statement)
+        return curs.fetchall()
     def execute(self, statement):
         with self.conn:
             with self.conn.cursor() as curs:
@@ -65,6 +79,20 @@ class dbConnection:
                     curs.execute(f"""INSERT INTO WORDS (word, num) values ('{word}', {count}) RETURNING *;""")
                 res = curs.fetchall()
         return res
+    
+    # Private helper functions
+    def _check_source_dict(self, curs, word : str, language : int):
+        """ Check the source dictionary for if a value exists (not the cached value in the table)"""
+        # Dictionary of table names for the dictionaries and check columns
+        lang_dicts = {
+            1 : ('korean_dictionary','fullform')
+        }
+        if language not in lang_dicts:
+            return False
+        target_dict, target_col = lang_dicts[language]
+        res = self._execute(curs, f"""SELECT 1 FROM {target_dict} WHERE {target_col} = '{word}' limit 1;""")
+        return len(res) > 0
+
     def _update_word_list(self, word_list, language : int):
         """ Private method. Update the word count of a list of words (unique on word) in the db. Need to acquire conn 
          before using """
@@ -96,8 +124,8 @@ class dbConnection:
             # print(update_list)
             # print(insert_list)
             update_sql = f"""UPDATE WORDS SET num = %s WHERE word = %s AND pos = %s;"""
-            insert_sql = f"""INSERT INTO WORDS (WORD, POS, EXAMPLE, TYPE, NUM, LANG) 
-                                VALUES (%s, %s, %s, %s, %s, %s);"""
+            insert_sql = f"""INSERT INTO WORDS (WORD, POS, EXAMPLE, TYPE, NUM, LANG, IN_DICT) 
+                                VALUES (%s, %s, %s, %s, %s, %s, %s);"""
             def update_tuple(row):
                 """ Create an approriate update tuple from a row """
                 word, pos, num, ex = row
@@ -107,13 +135,17 @@ class dbConnection:
             def insert_tuple(row):
                 """Create an appropriate sql insert tuple from row"""
                 word, pos, num, ex = row
+                # Get type
                 if word in old_set:
                     type = 1 # OLD
                 else:
                     type = 2 # NEW
-                return (word, pos, ex, type, num, language)
+                # Check if in the dictionary
+                in_dict = self._check_source_dict(curs, word, language)
+                return (word, pos, ex, type, num, language, in_dict)
             curs.executemany(update_sql, map(update_tuple, update_list))
             curs.executemany(insert_sql, map(insert_tuple, insert_list))
+
     def update_many(self, word_list, language : int):
         with self.conn:
             self._update_word_list(self, word_list, language)
@@ -135,11 +167,17 @@ class dbConnection:
                 # Add to files
                 curs.execute(f"""INSERT INTO UPLOADED_FILES (FILENAME) VALUES('{basename}');""")
             self._update_word_list(data, language)
-    def get_new(self, langauge : int):
+
+    def get_new(self, language : int):
         """Get the most common new word from the database"""
+        required_fields = [
+            "id", "word", "pos", "meaning", "example", "type", "num", "lang"
+        ]
         with self.conn:
             with self.conn.cursor() as curs:
-                curs.execute(f"SELECT * FROM WORDS WHERE TYPE = 2 AND LANG = {langauge} ORDER BY NUM DESC LIMIT 1;")
+                curs.execute(f"""SELECT {','.join(required_fields)} FROM WORDS """
+                             f"""WHERE TYPE = 2 AND LANG = {language} """
+                             f"""ORDER BY IN_DICT DESC, NUM DESC LIMIT 1;""")
                 res = curs.fetchone()
                 print(res)
         if not res:
@@ -156,6 +194,7 @@ class dbConnection:
             "num" : num,
             "lang" : lang
         }
+    
     def add_meaning_and_type(self, id, meaning, type):
         """ Add a meaning and update the type for a given word"""
         with self.conn:
@@ -168,7 +207,7 @@ class dbConnection:
     def add_alternate(self, word, pos, meaning, type, num, language : int, example=''):
         """ When we add an alternate definition for a word"""
         with self.conn:
-            with self.conn.cusror() as curs:
+            with self.conn.cursor() as curs:
                 curs.execute(f"""INSERT INTO WORDS 
                     (word, pos, meaning, type, num, language, example)
                     VALUES
@@ -190,6 +229,10 @@ class dbConnection:
         """ Get db name """
         return self.db_name
 
+    @transact
+    def check_source_dict(self, curs, word : str, language : int):
+        return self._check_source_dict(curs, word, language)
+
 if __name__ == '__main__':
     try:
         db = dbConnection('database.ini')
@@ -208,9 +251,11 @@ if __name__ == '__main__':
         # db.import_file('./data/mlfts14.csv')
         # print(db.get_new())
         # db.add_meaning_and_type(10306, "Number one bts member", 7)
-        # print(db.get_types())A
+        # print(db.get_types())
         # print(db.check_exists('개새끼', 1))
-        print(db.get_languages())
+        # print(db.get_languages())
+        # print(db.check_source_dict('개', 1))
+        print(db.get_new(1))
         # print(res)
     finally:
         db.close()
