@@ -107,7 +107,7 @@ scriptElem.text = `
         send({
           movieId : movieId,
           movieName : movieName,
-          ep : 1,
+          ep : 0,
           url : bestUrl,
           lang : originLang
         });
