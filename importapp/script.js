@@ -7,6 +7,8 @@ const exampleElem = document.getElementById("example");
 const typeElem = document.getElementById("type");
 
 const langElem = document.getElementById("select-lang");
+
+const dbElem = document.querySelector(".database");
 // State variables
 let currentId = null;
 let currentWord = null;
@@ -37,6 +39,10 @@ async function getTypes(){
 async function getLanguages(){
     return fetch(`${server}/languages`).then((res) => res.json());
 }
+async function getDatabase(){
+    return fetch(`${server}/dbname`).then((res) => res.json());
+} 
+
 function updateSearchURL(searchTerm){
     const dict_link = "https://korean.dict.naver.com/koendict/#/search";
     const search_link = `${dict_link}?query=${searchTerm}`;
@@ -117,6 +123,9 @@ getTypes().then((types) => {
 getLanguages().then((languages) => {
     addOptions(langElem, languages.languages);
 })
+getDatabase().then((res)=>{
+    dbElem.innerText = `Database name: ${res["name"]}`;
+});
 refresh();
 document.getElementById("subButton").onclick = submit;
 document.getElementById("ref-button").onclick = () => {

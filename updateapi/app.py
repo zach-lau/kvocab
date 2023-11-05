@@ -1,6 +1,18 @@
 from flask import Flask, request
 from database import dbConnection
 
+# Decorator for db accessing functions
+def db_safe_func(func):
+    def ret_func():
+        try:
+            db = dbConnection("../database.ini")
+            return func(db)
+        except Exception as e:
+            print(e)
+            return { "status" : "Fail" }
+        finally:
+            db.close()
+    return ret_func
 app = Flask(__name__)
 
 @app.get("/new")
@@ -82,3 +94,8 @@ def get_languages():
         return { "status" : "Fail" }
     finally:
         db.close()
+
+@app.get("/dbname")
+@db_safe_func
+def get_dbname(db : dbConnection):
+    return { "name" : db.get_db_name()}

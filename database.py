@@ -28,6 +28,7 @@ class dbConnection:
     def __init__(self, inifile):
         creds = config(inifile)
         self.conn = psycopg2.connect(**creds)
+        self.db_name = creds["database"]
     # Simple execute statements
     def execute(self, statement):
         with self.conn:
@@ -184,6 +185,10 @@ class dbConnection:
         """ Return list of ids and languages """
         langs = self.execute("SELECT ID, CODE FROM LANGUAGES;")
         return langs
+    
+    def get_db_name(self):
+        """ Get db name """
+        return self.db_name
 
 if __name__ == '__main__':
     try:
