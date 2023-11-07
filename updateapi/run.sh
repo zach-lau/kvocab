@@ -1,2 +1,4 @@
 export PYTHONPATH=$PYTHONPATH:$(pwd)/..
-flask run --debug -p 5001
+DEBUG="--debug"
+[[ $1 = prod ]] && DEBUG=""
+flask run ${DEBUG} -p 5001
