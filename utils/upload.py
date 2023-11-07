@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from database import dbConnection
+from kvocab.database import dbConnection
 import sys
 import os
 import argparse

@@ -1,5 +1,5 @@
 from flask import Flask, request
-from database import dbConnection
+from kvocab.database import dbConnection
 
 # Decorator for db accessing functions
 def db_safe_func(func):

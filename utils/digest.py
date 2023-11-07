@@ -4,15 +4,14 @@ Main entry point for the vocab scripts
 """
 
 import os.path
-import sys
 import argparse
 
-from extract import *
-from filter import *
-from helpers import *
+from kvocab.extract import *
+from kvocab.filter import *
+from kvocab.helpers import *
 
-from korean_morph import k_morph
-from canto_morph import canto_morph
+from kvocab.korean_morph import k_morph
+from kvocab.canto_morph import canto_morph
 
 def digest(filename, language = "ko"):
     if language == "ko":

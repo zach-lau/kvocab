@@ -1,6 +1,6 @@
-from morph_analyzer import morph_analyzer
 from konlpy.tag import Okt
-from filter import *
+from .morph_analyzer import morph_analyzer
+from .filter import *
 
 class k_morph(morph_analyzer):
     def __init__(self):
