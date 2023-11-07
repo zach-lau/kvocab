@@ -12,7 +12,8 @@ def extract_xml(filename):
     # TODO add namespaces
     ns = {'':'http://www.w3.org/ns/ttml'}
     for p in root.find('body',ns).find('div',ns).findall('p',ns):
-        yield p.text
+        for text in p.itertext():
+            yield text
 
 def extract_vtt(filename):
     for caption in webvtt.read(filename):
