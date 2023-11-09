@@ -1,11 +1,11 @@
 const {app, BrowserWindow} = require('electron')
-const electronReload = require('electron-reload');
+// const electronReload = require('electron-reload');
 const path = require('node:path')
 
-electronReload(__dirname);
-if (module.hot){
-    module.hot.accept();
-}
+// electronReload(__dirname);
+// if (module.hot){
+    // module.hot.accept();
+// }
 
 const createWindow = () => {
     const win = new BrowserWindow({
