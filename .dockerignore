@@ -1,0 +1,6 @@
+cert
+**/__pycache__
+*.ini
+data
+.env
+.DS_Store

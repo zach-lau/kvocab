@@ -4,33 +4,38 @@ from kvocab.database import dbConnection
 # Decorator for db accessing functions
 def db_safe_func(func):
     def ret_func():
+        db = None
         try:
-            db = dbConnection("../database.ini")
+            db = dbConnection("database.ini")
             return func(db)
         except Exception as e:
             print(e)
             return { "status" : "Fail" }
         finally:
-            db.close()
+            if db:
+                db.close()
     return ret_func
 app = Flask(__name__)
 
 @app.get("/new")
 def get_next_word():
+    db = None
     try:
-        db = dbConnection("../database.ini")
+        db = dbConnection("database.ini")
         language = int(request.args.get('language'))
         return db.get_new(language)
     except Exception as e:
         print(e)
         return { "status" : "Fail" }
     finally:
-        db.close()
+        if db:
+            db.close()
 
 @app.post("/update")
 def add_meaning():
+    db = None
     try:
-        db = dbConnection("../database.ini")
+        db = dbConnection("database.ini")
         vals = request.json
         # Check that we have the keys we need
         for key in ["id", "meaning", "type"]:
@@ -42,12 +47,14 @@ def add_meaning():
         print(e)
         return { "status" : "Fail" }
     finally:
-        db.close()
+        if db:
+            db.close()
 
 @app.post("/addnew")
 def add_new():
+    db = None
     try:
-        db = dbConnection("../database.ini")
+        db = dbConnection("database.ini")
         vals = request.json
         if db.check_exists(vals["word"], vals["language"]):
             return {"status":"Fail", "reason":"Already exists"}
@@ -64,12 +71,14 @@ def add_new():
         print(e)
         return { "status" : "Fail" } 
     finally:
-        db.close()
+        if db:
+            db.close()
 
 @app.get("/types")
 def get_types():
+    db = None
     try:
-        db = dbConnection("../database.ini")
+        db = dbConnection("database.ini")
         types = db.get_types()
         return {
             "types" : [{"id":x[0], "value":x[1]} for x in types]
@@ -79,12 +88,14 @@ def get_types():
         print(e)
         return { "status" : "Fail" }
     finally:
-        db.close()
+        if db:
+            db.close()
         
 @app.get("/languages")
 def get_languages():
+    db = None
     try:
-        db = dbConnection("../database.ini")
+        db = dbConnection("database.ini")
         langs = db.get_languages()
         return {
             "languages" : [{"id":id,"value":code} for id, code in langs]
@@ -93,7 +104,8 @@ def get_languages():
         print(e)
         return { "status" : "Fail" }
     finally:
-        db.close()
+        if db:
+            db.close()
 
 @app.get("/dbname")
 @db_safe_func

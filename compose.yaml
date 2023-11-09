@@ -1,0 +1,25 @@
+services:
+
+  fetchvtt:
+    image: kvocab
+    stop_signal: SIGINT
+    working_dir: /code
+    ports:
+      - '127.0.0.1:5000:5000'
+    volumes:
+      - ./cert:/code/cert
+      - ./fetchvtt/data:/code/data
+    command: flask --app fetchvtt/app.py run --host=0.0.0.0 --key cert/server.key --cert code/cert/server.crt
+
+  updateapi:
+    image: kvocab
+    stop_signal: SIGINT
+    working_dir: /code
+    ports:
+      - '127.0.0.1:5001:5000'
+    volumes:
+      - ./docker.database.ini:/code/database.ini
+    command: flask --app updateapi/app.py run --host=0.0.0.0
+    environment:
+      - PYTHONPATH=${PYTHON}:.
+      
