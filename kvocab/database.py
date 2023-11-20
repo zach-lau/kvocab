@@ -44,10 +44,10 @@ class dbConnection:
     def _execute(self, curs, statement, *args):
         curs.execute(statement, *args)
         return curs.fetchall()
-    def execute(self, statement):
+    def execute(self, statement, *args):
         with self.conn:
             with self.conn.cursor() as curs:
-                curs.execute(statement)
+                curs.execute(statement, *args)
                 return curs.fetchall()
     def execute_list(self, statements):
         with self.conn:
@@ -62,21 +62,21 @@ class dbConnection:
         return [x[0] for x in self.execute("""SELECT DISTINCT WORD FROM WORDS;""")]
     def check_exists(self, word, language : int):
         """ Check if a word exists in the db"""
-        res = self.execute(f"""SELECT 1 FROM WORDS WHERE word = %s AND lang = %s;""", word, language)
+        res = self.execute(f"""SELECT 1 FROM WORDS WHERE word = %s AND lang = %s;""", (word, language))
         return len(res) > 0
     def update_word(self, word, count):
         """Deprecated - neds updating for POS 
         Update the count of a single word in the db. Add it if it doesn't yet exist"""
         with self.conn:
             with self.conn.cursor() as curs:
-                curs.execute(f"""SELECT WORD, NUM FROM WORDS WHERE word = %s;""", word)
+                curs.execute(f"""SELECT WORD, NUM FROM WORDS WHERE word = %s;""", (word,))
                 res = curs.fetchall()
                 if len(res) > 0:
                     _, old_count = res[0]
                     new_count = old_count + count
-                    curs.execute(f"""UPDATE WORDS SET num = %s WHERE word = %s RETURNING *;""", new_count, word)
+                    curs.execute(f"""UPDATE WORDS SET num = %s WHERE word = %s RETURNING *;""", (new_count, word))
                 else: # In this case we need a insert
-                    curs.execute(f"""INSERT INTO WORDS (word, num) values (%s, %s) RETURNING *;""", word, count)
+                    curs.execute(f"""INSERT INTO WORDS (word, num) values (%s, %s) RETURNING *;""", (word, count))
                 res = curs.fetchall()
         return res
     
@@ -90,8 +90,7 @@ class dbConnection:
         if language not in lang_dicts:
             return False
         target_dict, target_col = lang_dicts[language]
-        res = self._execute(curs, f"""SELECT 1 FROM %s WHERE %s = %s limit 1;""", target_dict, 
-                            target_col, word)
+        res = self._execute(curs, f"""SELECT 1 FROM {target_dict} WHERE {target_col} = %s limit 1;""", (word,))
         return len(res) > 0
 
     def _update_word_list(self, word_list, language : int):
@@ -151,6 +150,16 @@ class dbConnection:
         with self.conn:
             self._update_word_list(self, word_list, language)
 
+    def _file_exists(self, curs, filename : str) -> bool:
+        """ Check if a file has been uploaded to the db """
+        curs.execute(f"""SELECT FILENAME FROM UPLOADED_FILES WHERE FILENAME = %s;""", (filename,))
+        res = curs.fetchall()
+        return len(res) > 0
+    
+    @transact
+    def file_exists(self, curs, filename : str) -> bool:
+        return self._file_exists(curs, filename)
+
     def import_file(self, filename, language : int):
         data = []
         with open(filename, 'r') as f:
@@ -160,13 +169,11 @@ class dbConnection:
             # Check if the file has already been uploaded 
             basename = os.path.basename(filename)
             with self.conn.cursor() as curs:
-                curs.execute(f"""SELECT FILENAME FROM UPLOADED_FILES WHERE FILENAME = %s;""", basename)
-                res = curs.fetchall()
-                if len(res) > 0:
+                if self._file_exists(curs, basename):
                     print(f"The file {basename} has already been uploaded")
                     return
                 # Add to files
-                curs.execute(f"""INSERT INTO UPLOADED_FILES (FILENAME) VALUES(%s);""", basename)
+                curs.execute(f"""INSERT INTO UPLOADED_FILES (FILENAME) VALUES(%s);""", (basename,))
             self._update_word_list(data, language)
 
     def get_new(self, language : int):
@@ -176,10 +183,13 @@ class dbConnection:
         ]
         with self.conn:
             with self.conn.cursor() as curs:
-                curs.execute(f"""SELECT %s FROM WORDS """
-                             f"""WHERE TYPE = 2 AND LANG = %s """
-                             f"""ORDER BY IN_DICT DESC, NUM DESC LIMIT 1;""",
-                             ','.join(required_fields), language)
+                cols = ','.join(required_fields)
+                # Since we control cols we aren't at risk of sql injection
+                exec_template = f"""SELECT {cols} FROM WORDS """\
+                                f"""WHERE TYPE = 2 AND LANG = %s """\
+                                f"""ORDER BY IN_DICT DESC, NUM DESC LIMIT 1;"""
+                print(exec_template)
+                curs.execute(exec_template, (language,))
                 res = curs.fetchone()
                 print(res)
         if not res:
@@ -201,7 +211,7 @@ class dbConnection:
         """ Add a meaning and update the type for a given word"""
         with self.conn:
             with self.conn.cursor() as curs:
-                curs.execute(f"""UPDATE WORDS SET meaning = %s, type = %s WHERE id = %s""", meaning, type, id)
+                curs.execute(f"""UPDATE WORDS SET meaning = %s, type = %s WHERE id = %s""", (meaning, type, id))
         
     def close(self):
         self.conn.close()
@@ -214,8 +224,7 @@ class dbConnection:
                     (word, pos, meaning, type, num, language, example)
                     VALUES
                     (%s, %s, %s, %s, %s, %s, %s)
-                    ;""", word, pos, meaning, type, num, language, example
-                )
+                    ;""", (word, pos, meaning, type, num, language, example))
 
     def get_types(self):
         """ Return list of tuples of types """
@@ -236,8 +245,8 @@ class dbConnection:
         return self._check_source_dict(curs, word, language)
 
 if __name__ == '__main__':
+    db = dbConnection('database.ini')
     try:
-        db = dbConnection('database.ini')
         # res = db.execute('SELECT * FROM WORDS;')
         # res = db.execute_list([
         #     """SELECT * FROM WORDS WHERE word = '학생';""",
