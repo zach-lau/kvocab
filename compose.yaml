@@ -1,5 +1,20 @@
 services:
 
+  redis:
+    image: redis:4.0.6-alpine
+
+  worker:
+    working_dir : /code
+    depends_on:
+      - redis
+    image: kvocab
+    command: rq worker --url redis://redis:6379
+    volumes:
+      - ./fetchvtt/data:/code/data # To access saved files from fetchvtt
+      - ./docker.database.ini:/code/database.ini # DB creds
+    links:
+      - redis
+
   fetchvtt:
     image: kvocab
     stop_signal: SIGINT
@@ -7,9 +22,11 @@ services:
     ports:
       - '127.0.0.1:5000:5000'
     volumes:
-      - ./cert:/code/cert
-      - ./fetchvtt/data:/code/data
-    command: flask --app fetchvtt/app.py run --host=0.0.0.0 --key cert/server.key --cert code/cert/server.crt
+      - ./cert:/code/cert # For ssl
+      - ./fetchvtt/data:/code/data # To save files
+    command: flask --app fetchvtt/app.py run --host=0.0.0.0 --key cert/server.key --cert cert/server.crt
+    environment:
+      REDIS_HOST : redis
 
   updateapi:
     image: kvocab
@@ -18,8 +35,5 @@ services:
     ports:
       - '127.0.0.1:5001:5000'
     volumes:
-      - ./docker.database.ini:/code/database.ini
+      - ./docker.database.ini:/code/database.ini # DB creds
     command: flask --app updateapi/app.py run --host=0.0.0.0
-    environment:
-      - PYTHONPATH=${PYTHON}:.
-      

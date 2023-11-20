@@ -3,8 +3,19 @@ from flask_cors import CORS
 import requests
 import os
 
+# For queuing the file
+from rq import Queue
+from redis import Redis
+from kvocab.fullprocess import process_file
+from kvocab.language_mappings import language_mappings
+
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["https://www.viki.com/*", "https://www.netflix.com/*"])
+
+if "REDIS_HOST" in os.environ:
+    REDIS_HOST = os.environ["REDIS_HOST"]
+else:
+    REDIS_HOST = "localhost"
 
 @app.get("/")
 def handle():
@@ -45,6 +56,13 @@ def handle_post():
     with open(filename, "wb") as f:
         f.write(vttRes.content)
     print(f'Wrote out {filename}')
+    try:
+        q = Queue(connection=Redis(REDIS_HOST))
+        lang = language_mappings[movieObj["lang"]]
+        q.enqueue(process_file, filename, lang)
+    except Exception as e:
+        print("Failed to queue. Upload manually")
+        print(e)
     return {"status" : "ok"} 
 
 if __name__ == "__main__":
