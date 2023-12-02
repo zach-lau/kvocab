@@ -15,21 +15,7 @@ let currentWord = null;
 let currentLanguage = 1;
 let validWord = false;
 
-function populate(word){
-    wordElem.value = word.word;
-    posElem.value = word.pos;
-    meaningElem.value = word.meaning;
-    exampleElem.value = word.example;
-    typeElem.value = 5;
-}
-function addOptions(elem, optionsList){
-    for (const t of optionsList){
-        const opt = document.createElement("option");
-        opt.value = t.id;
-        opt.innerText = `${t.id}: ${t.value}`;
-        elem.appendChild(opt);
-    }
-}
+// Database interaction functions... just return stuff from the database
 async function getNewWord(language){
     return fetch(`${server}/new?language=${language}`).then((res) => res.json());
 }
@@ -43,18 +29,7 @@ async function getDatabase(){
     return fetch(`${server}/dbname`).then((res) => res.json());
 } 
 
-function updateSearchURL(searchTerm){
-    // Todo might need to more complicated logic to perform search later e.g. post request
-    const dictionaries = {
-        1 : "https://korean.dict.naver.com/koendict/#/search?query=",
-        2 : "https://cantonese.org/search.php?q=",
-    };
-    const dict_link = dictionaries[currentLanguage];
-    if (!dict_link) dict_link = "https://www.google.com/search?q="
-    const search_link = `${dict_link}${searchTerm}`;
-    const searchFrame = document.querySelector(".lookup iframe");
-    searchFrame.src = search_link;
-}
+// Wrapper for updating database
 async function postJSON(post_url, data) {
     try {
       const response = await fetch(post_url, {
@@ -69,12 +44,47 @@ async function postJSON(post_url, data) {
     } catch (error) {
       console.error("Error:", error);
     }
-  }
+}
+
+// DOM modifying functions which take values from the database and update DOM
+function populate(word){
+    wordElem.value = word.word;
+    posElem.value = word.pos;
+    meaningElem.value = word.meaning;
+    exampleElem.value = word.example;
+    typeElem.value = 5;
+}
+
+function addOptions(elem, optionsList){
+    for (const t of optionsList){
+        const opt = document.createElement("option");
+        opt.value = t.id;
+        opt.innerText = `${t.id}: ${t.value}`;
+        elem.appendChild(opt);
+    }
+}
+
+function updateSearchURL(searchTerm){
+    // Todo might need to more complicated logic to perform search later e.g. post request
+    const dictionaries = {
+        1 : "https://korean.dict.naver.com/koendict/#/search?query=",
+        2 : "https://cantonese.org/search.php?q=",
+    };
+    const dict_link = dictionaries[currentLanguage];
+    if (!dict_link) dict_link = "https://www.google.com/search?q="
+    const search_link = `${dict_link}${searchTerm}`;
+    const searchFrame = document.querySelector(".lookup iframe");
+    searchFrame.src = search_link;
+}
+
 function clearInputs(){
     [wordElem, posElem, meaningElem, exampleElem].forEach((elem) => {
         elem.value = "";
     })
 }
+
+// Hi level button actions
+
 function refresh(){
     getNewWord(currentLanguage).then((word) => {
         // console.log(word);
@@ -121,7 +131,7 @@ function submit(){
     sendData().then(()=>refresh());
 }
 
-// Main loop code
+// Set up code
 getTypes().then((types) => {
     // console.log(options.types);
     addOptions(typeElem, types.types);
@@ -133,6 +143,8 @@ getDatabase().then((res)=>{
     dbElem.innerText = `Database name: ${res["name"]}`;
 });
 refresh();
+
+// Link the buttons to their appopriate actions
 document.getElementById("subButton").onclick = submit;
 document.getElementById("ref-button").onclick = () => {
     updateSearchURL(wordElem.value); // Update with the current value
