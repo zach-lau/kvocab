@@ -106,6 +106,7 @@ function refresh(){
         }
         populate(word);
         updateSearchURL(word.word);
+        translationElem.value = "...";
         translateExample(word.example).then(
             (translation) => { translationElem.value = translation}
         );
