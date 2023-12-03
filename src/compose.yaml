@@ -37,3 +37,13 @@ services:
     volumes:
       - ./docker.database.ini:/code/database.ini # DB creds
     command: flask --app updateapi/app.py run --host=0.0.0.0
+
+  translate-api:
+    image: kvocab
+    stop_signal: SIGINT
+    working_dir: /code
+    ports:
+      - '127.0.0.1:5002:5000'
+    volumes:
+      - ./deepl.ini:/code/deepl.ini # DeepL creds
+    command: flask --app translateapi/app.py run --host=0.0.0.0

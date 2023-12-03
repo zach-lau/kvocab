@@ -1,6 +1,6 @@
 // Server and api settings
 const server = "http://localhost:5001";
-const translate_server = "http://localhost:5049"
+const translate_server = "http://localhost:5002"
 // Global element values - could make these functions I guess...
 const wordElem = document.getElementById("word");
 const posElem = document.getElementById("pos");
