@@ -1,14 +1,18 @@
+// Server and api settings
 const server = "http://localhost:5001";
+const translate_server = "http://localhost:5049"
 // Global element values - could make these functions I guess...
 const wordElem = document.getElementById("word");
 const posElem = document.getElementById("pos");
 const meaningElem = document.getElementById("meaning");
 const exampleElem = document.getElementById("example");
 const typeElem = document.getElementById("type");
+const translationElem = document.getElementById("translation");
 
 const langElem = document.getElementById("select-lang");
 
 const dbElem = document.querySelector(".database");
+
 // State variables
 let currentId = null;
 let currentWord = null;
@@ -29,7 +33,7 @@ async function getDatabase(){
     return fetch(`${server}/dbname`).then((res) => res.json());
 } 
 
-// Wrapper for updating database
+// Wrapper for requests
 async function postJSON(post_url, data) {
     try {
       const response = await fetch(post_url, {
@@ -40,6 +44,7 @@ async function postJSON(post_url, data) {
         body: JSON.stringify(data),
       });
       const result = await response.json();
+      return result
     //   console.log("Success:", result);
     } catch (error) {
       console.error("Error:", error);
@@ -77,8 +82,14 @@ function updateSearchURL(searchTerm){
     searchFrame.src = search_link;
 }
 
+async function translateExample(example){
+    const resp = await postJSON(translate_server, { text : example });
+    console.log(resp);
+    return resp.text;
+}
+
 function clearInputs(){
-    [wordElem, posElem, meaningElem, exampleElem].forEach((elem) => {
+    [wordElem, posElem, meaningElem, exampleElem, translationElem].forEach((elem) => {
         elem.value = "";
     })
 }
@@ -95,6 +106,9 @@ function refresh(){
         }
         populate(word);
         updateSearchURL(word.word);
+        translateExample(word.example).then(
+            (translation) => { translationElem.value = translation}
+        );
         currentId = word.id;
         currentWord = word.word;
         validWord = true;
